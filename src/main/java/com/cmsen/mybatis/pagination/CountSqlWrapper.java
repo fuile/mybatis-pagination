@@ -42,7 +42,7 @@ public class CountSqlWrapper {
 
     private String getBoundSql(String sql) {
         sql = sql.substring(0, sql.toUpperCase().indexOf(" ORDER BY"));
-        sql = "SELECT COUNT(0) FROM (" + sql + ") AS total";
+        sql = "SELECT COUNT(0) FROM (" + sql.trim() + ") AS total";
         return sql;
     }
 }
