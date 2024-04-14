@@ -131,3 +131,14 @@ public class TestUsing {
     }
 }
 ```
+
+### Maven
+
+```xml
+
+<dependency>
+    <groupId>com.cmsen.mybatis</groupId>
+    <artifactId>mybatis-pagination</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
