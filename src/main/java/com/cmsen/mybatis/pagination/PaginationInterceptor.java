@@ -90,18 +90,35 @@ public class PaginationInterceptor implements Interceptor {
                     if (ObjectUtil.equals(entry.getValue(), this.paginationObject)) {
                         newParameterObject.putAll(parsePage(executor, ms, boundSql, entry.getValue()));
                     } else {
-                        newParameterObject.put(entry.getKey(), entry.getValue());
+                        DefaultPagination defaultPagination = PaginationHelper.get();
+                        if (defaultPagination != null) {
+                            newParameterObject.putAll(parsePage(executor, ms, boundSql, defaultPagination));
+                        } else {
+                            newParameterObject.put(entry.getKey(), entry.getValue());
+                        }
                     }
                 }
                 return sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameterObject);
             } else if (ObjectUtil.equals(parameterObject, this.paginationObject)) {
                 Map<String, Object> newParameter = parsePage(executor, ms, boundSql, parameterObject);
                 return sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameter);
+            } else {
+                DefaultPagination defaultPagination = PaginationHelper.get();
+                if (defaultPagination != null) {
+                    Map<String, Object> newParameter = parsePage(executor, ms, boundSql, defaultPagination);
+                    Field[] declaredFields = ObjectUtil.getDeclaredFields(parameterObject);
+                    for (Field declaredField : declaredFields) {
+                        newParameter.put(declaredField.getName(), declaredField.get(parameterObject));
+                    }
+                    return sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameter);
+                }
             }
-        } else if (PaginationHelper.get() != null) {
-            Map<String, Object> newParameter = parsePage(executor, ms, boundSql, PaginationHelper.get());
-            PaginationHelper.clear();
-            return sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameter);
+        } else {
+            DefaultPagination defaultPagination = PaginationHelper.get();
+            if (defaultPagination != null) {
+                Map<String, Object> newParameter = parsePage(executor, ms, boundSql, defaultPagination);
+                return sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameter);
+            }
         }
 
         return invocation.proceed();

@@ -14,7 +14,9 @@ public class PaginationHelper implements Closeable {
     protected static final ThreadLocal<DefaultPagination> LOCAL = new ThreadLocal<>();
 
     public static DefaultPagination get() {
-        return LOCAL.get();
+        DefaultPagination defaultPagination = LOCAL.get();
+        clear();
+        return defaultPagination;
     }
 
     public static void set(DefaultPagination pagination) {

@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.HashMap;
 import java.util.List;
 
 /*
@@ -43,8 +42,10 @@ public class PaginationInterceptorTest {
     public void test() {
         try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
             TestMapper mapper = sqlSession.getMapper(TestMapper.class);
-            DefaultPagination of = PaginationHelper.of(10, 3);
-            List<Object> select = mapper.select();
+            DefaultPagination of = PaginationHelper.of(0, 3);
+            Entity o = new Entity("test entity");
+            o = null;
+            List<Object> select = mapper.select(o);
             log.info("{}", select);
             log.info("of: {}", of.record);
         }
@@ -55,12 +56,28 @@ public class PaginationInterceptorTest {
         try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
             TestMapper mapper = sqlSession.getMapper(TestMapper.class);
             Page page = Page.of(1, 20);
-            Object o = new HashMap<>();
+            Entity o = new Entity("test entity");
             List<Object> select = mapper.select(o, page);
             List<Object> select2 = mapper.select(1, 7);
             System.out.println("select = " + select);
             System.out.println("select2 = " + select2);
             System.out.println("page = " + page);
+        }
+    }
+
+    public static class Entity {
+        private String name;
+
+        public Entity(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
     }
 

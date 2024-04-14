@@ -18,6 +18,8 @@ import java.util.List;
 public interface TestMapper {
     List<Object> select();
 
+    List<Object> select(Object o);
+
     List<Object> select(PaginationInterceptorTest.Page page);
 
     List<Object> select(Object o, PaginationInterceptorTest.Page page);
