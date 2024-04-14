@@ -34,6 +34,7 @@ public class PaginationInterceptor implements Interceptor {
     private String recordProperty = "record";
     private String totalProperty = "total";
     private boolean disableCount;
+    private final SqlMappingBuilder sqlMappingBuilder = new SqlMappingBuilder();
 
     public PaginationInterceptor() {
     }
@@ -62,22 +63,23 @@ public class PaginationInterceptor implements Interceptor {
         this.disableCount = disableCount;
     }
 
+    public void setDialect(String databaseId, Dialect dialect) {
+        this.sqlMappingBuilder.setDialect(databaseId, dialect);
+    }
+
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         Executor executor = (Executor) invocation.getTarget();
         Object[] args = invocation.getArgs();
-        MappedStatement ms = (MappedStatement) args[0];
-        Object parameterObject = args[1];
-        RowBounds rowBounds = (RowBounds) args[2];
-        ResultHandler<?> resultHandler = (ResultHandler<?>) args[3];
-        CacheKey cacheKey;
-        BoundSql boundSql;
-        if (args.length == 4) {
-            boundSql = ms.getBoundSql(parameterObject);
-            cacheKey = executor.createCacheKey(ms, parameterObject, rowBounds, boundSql);
-        } else {
-            cacheKey = (CacheKey) args[4];
-            boundSql = (BoundSql) args[5];
+        MappedStatement ms = ObjectUtil.get(args[0]);
+        Object parameterObject = ObjectUtil.get(args[1]);
+        RowBounds rowBounds = ObjectUtil.get(args[2]);
+        ResultHandler<?> resultHandler = ObjectUtil.get(args[3]);
+        BoundSql boundSql = args.length == 4 ? ms.getBoundSql(parameterObject) : ObjectUtil.get(args[5]);
+        CacheKey cacheKey = args.length == 4 ? executor.createCacheKey(ms, parameterObject, rowBounds, boundSql) : ObjectUtil.get(args[4]);
+
+        if (ms.getConfiguration().getDatabaseId() == null) {
+            return invocation.proceed();
         }
 
         if (parameterObject != null) {
@@ -91,18 +93,15 @@ public class PaginationInterceptor implements Interceptor {
                         newParameterObject.put(entry.getKey(), entry.getValue());
                     }
                 }
-                PageSqlWrapper pageSqlWrapper = new PageSqlWrapper(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameterObject);
-                return pageSqlWrapper.getValue();
+                return sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameterObject);
             } else if (ObjectUtil.equals(parameterObject, this.paginationObject)) {
                 Map<String, Object> newParameter = parsePage(executor, ms, boundSql, parameterObject);
-                PageSqlWrapper pageSqlWrapper = new PageSqlWrapper(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameter);
-                return pageSqlWrapper.getValue();
+                return sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameter);
             }
         } else if (PaginationHelper.get() != null) {
             Map<String, Object> newParameter = parsePage(executor, ms, boundSql, PaginationHelper.get());
             PaginationHelper.clear();
-            PageSqlWrapper pageSqlWrapper = new PageSqlWrapper(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameter);
-            return pageSqlWrapper.getValue();
+            return sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameter);
         }
 
         return invocation.proceed();
@@ -121,7 +120,6 @@ public class PaginationInterceptor implements Interceptor {
             }
         }
         if (!disableCount) {
-            CountSqlWrapper countSqlWrapper = new CountSqlWrapper(executor, ms, boundSql);
             Field offset = ObjectUtil.getDeclaredField(this.offsetProperty, parameterObject.getClass());
             Field limit = ObjectUtil.getDeclaredField(this.limitProperty, parameterObject.getClass());
             Field record = ObjectUtil.getDeclaredField(this.recordProperty, parameterObject.getClass());
@@ -129,7 +127,7 @@ public class PaginationInterceptor implements Interceptor {
 
             newParameter.putIfAbsent("offset", offset != null ? offset.get(parameterObject) : 0);
             newParameter.putIfAbsent("limit", limit != null ? limit.get(parameterObject) : 0);
-            newParameter.put("record", record != null ? countSqlWrapper.getValue().intValue() : 0);
+            newParameter.put("record", record != null ? sqlMappingBuilder.count(executor, ms, boundSql).intValue() : 0);
             newParameter.put("total", total != null ? (int) Math.ceil(1.0 * ((Number) newParameter.get("record")).intValue() / ((Number) newParameter.get("limit")).intValue()) : 0);
 
             if (record != null) {

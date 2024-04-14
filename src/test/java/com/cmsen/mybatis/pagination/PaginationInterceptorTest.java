@@ -32,6 +32,7 @@ public class PaginationInterceptorTest {
             SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
             sqlSessionFactory = sqlSessionFactoryBuilder.build(resourceAsReader);
             Configuration configuration = sqlSessionFactory.getConfiguration();
+            configuration.setDatabaseId("mysql");
             configuration.addInterceptor(new PaginationInterceptor());
         } catch (IOException e) {
             System.err.println(e);
@@ -69,9 +70,17 @@ public class PaginationInterceptorTest {
         //        int total;
         //        int record;
 
+        public Page(int limit) {
+            this.limit = limit;
+        }
+
         public Page(int offset, int limit) {
             this.offset = offset;
             this.limit = limit;
+        }
+
+        public static Page of(int limit) {
+            return new Page(limit);
         }
 
         public static Page of(int offset, int limit) {

@@ -13,6 +13,10 @@ public class DefaultPagination extends AbstractPagination {
         this.limit = limit;
     }
 
+    public static DefaultPagination of(int limit) {
+        return new DefaultPagination(0, limit);
+    }
+
     public static DefaultPagination of(int offset, int limit) {
         return new DefaultPagination(offset, limit);
     }
