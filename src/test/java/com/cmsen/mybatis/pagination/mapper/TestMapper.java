@@ -8,6 +8,7 @@
 package com.cmsen.mybatis.pagination.mapper;
 
 import com.cmsen.mybatis.pagination.Limit;
+import com.cmsen.mybatis.pagination.NodeEntity;
 import com.cmsen.mybatis.pagination.Offset;
 import com.cmsen.mybatis.pagination.PaginationInterceptorTest;
 import org.apache.ibatis.annotations.Mapper;
@@ -17,6 +18,8 @@ import java.util.List;
 @Mapper
 public interface TestMapper {
     List<Object> select();
+
+    List<Object> select(NodeEntity nodeEntity);
 
     List<Object> select(Object o);
 

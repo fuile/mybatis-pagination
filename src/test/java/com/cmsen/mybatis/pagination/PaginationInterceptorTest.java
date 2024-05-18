@@ -45,7 +45,8 @@ public class PaginationInterceptorTest {
             DefaultPagination of = PaginationHelper.of(0, 3);
             Entity o = new Entity("test entity");
             o = null;
-            List<Object> select = mapper.select(o);
+
+            List<Object> select = mapper.select(new NodeEntity("1,2"));
             log.info("{}", select);
             log.info("of: {}", of.record);
         }

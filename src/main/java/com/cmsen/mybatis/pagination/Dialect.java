@@ -13,7 +13,10 @@ import java.util.Map;
 
 public interface Dialect {
     default String getCountSql(String sql) {
-        sql = sql.substring(0, sql.toUpperCase().indexOf(" ORDER BY"));
+        int index = sql.toUpperCase().indexOf(" ORDER BY");
+        if (index != -1) {
+            sql = sql.substring(0, index);
+        }
         sql = "SELECT COUNT(0) FROM (" + sql.trim() + ") AS total";
         return sql;
     }

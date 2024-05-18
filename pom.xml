@@ -19,7 +19,7 @@
     </organization>
     <repositories>
         <repository>
-            <id>release</id>
+            <id>aliyun</id>
             <url>https://maven.aliyun.com/repository/public/</url>
         </repository>
         <repository>

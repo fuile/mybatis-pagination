@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.cmsen.mybatis.pagination.mapper.TestMapper">
-    <select id="select" resultType="map">
+    <select id="select" resultType="java.lang.Object">
         select id, node_name, is_enable, create_time
         from dc_node
+
+        <where>
+            <foreach collection="ids.split(',')" item="id" open="AND id IN (" separator=","
+                     close=")">
+                #{id}
+            </foreach>
+        </where>
         order by id desc
     </select>
 </mapper>

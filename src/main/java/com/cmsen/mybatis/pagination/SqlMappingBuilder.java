@@ -66,7 +66,7 @@ public class SqlMappingBuilder {
         Configuration configuration = ms.getConfiguration();
         Dialect dialect = this.dialect.get(configuration.getDatabaseId());
         BoundSql countBoundSql = new BoundSql(ms.getConfiguration(), dialect.getCountSql(boundSql.getSql()), boundSql.getParameterMappings(), boundSql.getParameterObject());
-        Map<String, Object> additionalParameters = ObjectUtil.getAdditionalParameters(countBoundSql);
+        Map<String, Object> additionalParameters = ObjectUtil.getAdditionalParameters(boundSql);
         for (String additionalParametersKey : additionalParameters.keySet()) {
             countBoundSql.setAdditionalParameter(additionalParametersKey, additionalParameters.get(additionalParametersKey));
         }
