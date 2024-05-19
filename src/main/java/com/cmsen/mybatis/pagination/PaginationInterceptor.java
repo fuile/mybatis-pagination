@@ -86,19 +86,22 @@ public class PaginationInterceptor implements Interceptor {
             if (parameterObject instanceof Map) {
                 Map<String, Object> newParameterObject = new HashMap<>();
                 Map<String, Object> o = ObjectUtil.get(parameterObject);
+                boolean isPage = false;
                 for (Map.Entry<String, Object> entry : o.entrySet()) {
                     if (ObjectUtil.equals(entry.getValue(), this.paginationObject)) {
+                        isPage = true;
                         newParameterObject.putAll(parsePage(executor, ms, boundSql, entry.getValue()));
                     } else {
                         DefaultPagination defaultPagination = PaginationHelper.get();
                         if (defaultPagination != null) {
+                            isPage = true;
                             newParameterObject.putAll(parsePage(executor, ms, boundSql, defaultPagination));
                         } else {
                             newParameterObject.put(entry.getKey(), entry.getValue());
                         }
                     }
                 }
-                return sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameterObject);
+                return isPage ? sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameterObject) : invocation.proceed();
             } else if (ObjectUtil.equals(parameterObject, this.paginationObject)) {
                 Map<String, Object> newParameter = parsePage(executor, ms, boundSql, parameterObject);
                 return sqlMappingBuilder.page(executor, ms, resultHandler, rowBounds, cacheKey, boundSql, newParameter);
